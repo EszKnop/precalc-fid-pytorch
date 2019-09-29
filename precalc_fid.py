@@ -22,8 +22,8 @@ def get_activations_for_dataloader(model, dataloader, cuda=True, verbose=True):
         pred = model(images)[0]
         pred_arr.append(pred.view(images.size(0), -1))
 
-    result = torch.stack(pred_arr).cpu().data.numpy()
-
+    result = torch.cat(pred_arr)
+    result = result.cpu().numpy()
     if verbose:
         print('done. Result size: ', result.size)
 
