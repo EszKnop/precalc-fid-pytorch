@@ -25,10 +25,10 @@ def get_activations_for_dataloader(model, dataloader, cuda=True, verbose=True):
     result = torch.stack(pred_arr).cpu().data.numpy()
 
     if verbose:
-        print('done. Result size: ', result.size())
+        print('done. Result size: ', result.size)
 
-    return torch.stack(pred_arr)
-
+    return result
+    
 def calculate_activation_statistics_for_dataloader(model, dataloader, cuda=False, verbose=False):
     act = get_activations_for_dataloader(model, dataloader, cuda, verbose)
     mu = np.mean(act, axis=0)
@@ -40,15 +40,20 @@ def run():
     parser.add_argument('--dataroot', type=str)
     parser.add_argument('--imageSize', type=int, default=None)
     parser.add_argument('--batchSize', type=int, default=50)
-    parser.add_argument('--workers', type=int, default=1)
+    parser.add_argument('--workers', type=int, default=4)
     parser.add_argument('--normalize', action='store_true')
     parser.add_argument('--outf', type=str, default='fid_stats.npz')
 
     args = parser.parse_args()
 
-    transforms_collection = [
-        transforms.Resize(args.imageSize),
-        transforms.CenterCrop(args.imageSize),
+    transforms_collection = []
+    if args.imageSize is not None:
+        print("Adding resizing")
+        transforms_collection = [
+            transforms.Resize(args.imageSize),
+            transforms.CenterCrop(args.imageSize)
+        ]
+    transforms_collection += [
         transforms.ToTensor()
     ]
     if args.normalize:
